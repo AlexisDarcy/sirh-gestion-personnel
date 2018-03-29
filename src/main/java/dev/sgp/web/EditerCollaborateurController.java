@@ -1,12 +1,16 @@
 package dev.sgp.web;
 
 import java.io.IOException;
-import java.io.SequenceInputStream;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import dev.sgp.entite.Collaborateur;
+import dev.sgp.service.CollaborateurService;
+import dev.sgp.service.DepartementService;
+import dev.sgp.util.Constantes;
 
 /**
  * Servlet implementation class EditerCollaborateurController
@@ -14,40 +18,24 @@ import javax.servlet.http.HttpServletResponse;
 public class EditerCollaborateurController extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 
+	CollaborateurService collabService = Constantes.COLLAB_SERVICE;
+	DepartementService departService = Constantes.DEPART_SERVICE;
 	/**
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse
 	 *      response)
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
-		String error = "Les paramètres suivants sont incorrects : ";
-		if (request.getParameter("matricule") == null || request.getParameter("titre") == null
-				|| request.getParameter("nom") == null || request.getParameter("prenom") == null) {
-			if (request.getParameter("matricule") == null) {
-				error += "matricule ";
+		String matricule = request.getParameter("matricule");
+		Collaborateur collaborateur = new Collaborateur();		
+		for(Collaborateur c : collabService.listerCollaborateurs()){
+			if(c.getMatricule().equals(matricule)){
+				collaborateur = c;
 			}
-			if (request.getParameter("titre") == null) {
-				error += "titre ";
-			}
-			if (request.getParameter("nom") == null) {
-				error += "nom ";
-			}
-			if (request.getParameter("prenom") == null) {
-				error += "prenom";
-			}
-			response.sendError(400, error);
-		} else {
-			String matriculeParam = request.getParameter("matricule");
-			String titreParam = request.getParameter("titre");
-			String nomParam = request.getParameter("nom");
-			String prenomParam = request.getParameter("prenom");
-			response.setStatus(201);
-			response.getWriter()
-					.write("<h1>Creation d'un collaborateur avec les informations suivantes : </h1>" 
-							+"<ul>" + "<li> Matricule = " + matriculeParam + ", titre = " 
-							+ titreParam + ", nom = " + nomParam + ", prenom = " + prenomParam 
-							+ "</li>" + "</ul>");
 		}
+		request.setAttribute("collaborateur", collaborateur);
+		request.setAttribute("listerDepartement", departService.listerDepartements());
+		request.getRequestDispatcher("/WEB-INF/views/collab/editerCollaborateurs.jsp").forward(request, response);
 	}
 
 	/**
@@ -56,8 +44,48 @@ public class EditerCollaborateurController extends HttpServlet {
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
-		// TODO Auto-generated method stub
-		doGet(request, response);
+		String error = "Les paramètres suivants sont incorrects : ";
+		if (request.getParameter("civilite") == null || request.getParameter("tel") == null
+				|| request.getParameter("departement") == null || request.getParameter("nomFonction") == null
+				|| request.getParameter("IBAN") == null || request.getParameter("BIC") == null) {
+			if (request.getParameter("civilite") == null) {
+				error += "civilite";
+			}
+			if (request.getParameter("tel") == null) {
+				error += "tel";
+			}
+			if (request.getParameter("departement") == null) {
+				error += "departement";
+			}
+			if (request.getParameter("nomFonction") == null) {
+				error += "nomFonction";
+			}
+			if (request.getParameter("IBAN") == null) {
+				error += "IBAN";
+			}
+			if (request.getParameter("BIC") == null) {
+				error += "BIC";
+			}
+			response.sendError(400, error);
+		}else{
+			String matricule = request.getParameter("matricule");
+			String civilite = request.getParameter("civilite");
+			String tel = request.getParameter("tel");
+			String departement = request.getParameter("departement");
+			String nomFonction = request.getParameter("nomFonction");
+			String IBAN = request.getParameter("IBAN");
+			String BIC = request.getParameter("BIC");
+		
+			
+			for(Collaborateur c : collabService.listerCollaborateurs()){
+				if(c.getMatricule().equals(matricule)){
+					c.setDepartement(departement); c.setIntitulePoste(nomFonction);
+					c.setIban(IBAN); c.setBic(BIC); c.setTelephone(tel); c.setCivilite(civilite);
+				}
+			}
+			request.setAttribute("listCollaborateur", collabService.listerCollaborateurs());
+			request.setAttribute("listerDepartement", departService.listerDepartements());
+			request.getRequestDispatcher("/WEB-INF/views/collab/listerCollaborateurs.jsp").forward(request, response);
+		}
 	}
-
 }
